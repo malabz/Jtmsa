@@ -89,7 +89,7 @@ def PSA_LGP(A, B, g = -1):
                 continue
         else:
             print(i,j)
-            raise('Error')
+            raise RuntimeError('Error')
 
     # exchange the loc of A & B
     if state_ex:
@@ -252,7 +252,7 @@ def PSA_LGP_Kband(A, B, g=-1):
                 continue
         else:
             print(i,j,b_j)
-            raise('Error')
+            raise RuntimeError('Error')
 
 
     # exchange the loc of A & B
@@ -366,7 +366,7 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
 
         else:
             print(i,j,score)
-            raise('Wrong!')
+            raise RuntimeError('Wrong!')
     
     # exchange the loc of A & B
     if state_ex:
@@ -379,7 +379,7 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
 def Compute_two(s1, s2, d=3, e=1, m=1, mis=-2):
     if len(s1) != len(s2):
         print(s1, s2)
-        raise("the length of s1 and s2 is wrong!")
+        raise ValueError("the length of s1 and s2 is wrong!")
     score_two = 0
     gap1 = 0
     for i in range(len(s1)):

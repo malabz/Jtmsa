@@ -15,6 +15,7 @@ def find_gap(s):
             return loc
         loc += 1
 
+
 def extract_data(filename='DNA.csv'):
     # read the filename
     data_path = os.getcwd() + "/data"

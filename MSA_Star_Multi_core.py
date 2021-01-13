@@ -61,7 +61,7 @@ def MSA_star_Multicores(S):
                         if not state:
                             ij = results[k][i][j]
                         else:
-                            raise("ci wrong")
+                            raise ValueError("ci wrong")
                 s_psa[i][j] = s_psa[j][i] = ij
     C = np.argmax(np.sum(s_psa, axis=0))
     
@@ -116,7 +116,7 @@ def MSA_star_Multicores(S):
                 print(S_aligned[0])
                 print(str[0])
                 print(str[1])
-                raise("the length of seqs have a problem")            
+                raise ValueError("the length of seqs have a problem")            
             
             S_aligned.append(str[1])
         else:
