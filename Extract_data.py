@@ -18,9 +18,11 @@ def find_gap(s):
 
 def extract_data(filename='DNA.csv'):
     # read the filename
-    data_path = os.getcwd() + "/data"
-    # filenames = os.listdir(data_path)
-    file_path = data_path + "/" + filename
+    # data_path = os.getcwd() + "/data"
+    # # filenames = os.listdir(data_path)
+    # file_path = data_path + "/" + filename
+
+    file_path = os.path.join(os.getcwd(), "data", filename)
 
     # read the csv data
     with open(file_path, 'r') as f:
@@ -53,9 +55,12 @@ def write_fasta(strs, filepath):
 
 def read_fasta(filename="genome.fasta"):
     # read the filename
-    data_path = os.getcwd() + "/data"
+    # data_path = os.getcwd() + "/data"
     # filenames = os.listdir(data_path)
-    file_path = data_path + "/" + filename
+    # file_path = data_path + "/" + filename
+
+    file_path = os.path.join(os.getcwd(), "data", filename)
+
 
     with open(file_path, 'r') as f:
         temp = ""

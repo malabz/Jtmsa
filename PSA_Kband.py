@@ -89,7 +89,7 @@ def PSA_LGP(A, B, g = -1):
                 continue
         else:
             print(i,j)
-            raise RuntimeError('Error')
+            raise ValueError('i,j are Error')
 
     # exchange the loc of A & B
     if state_ex:
@@ -216,7 +216,7 @@ def PSA_LGP_Kband(A, B, g=-1):
             if k <= m:
                 p = [[-float('Inf')]*(diff+2*k+1) for _ in range(m+1)]
             else:
-                k /= 2
+                k //= 2
                 break
     i = m
     b_j = n
@@ -252,7 +252,7 @@ def PSA_LGP_Kband(A, B, g=-1):
                 continue
         else:
             print(i,j,b_j)
-            raise RuntimeError('Error')
+            raise ValueError('Error')
 
 
     # exchange the loc of A & B
@@ -264,6 +264,13 @@ def PSA_LGP_Kband(A, B, g=-1):
 
 # Affine gap penalty ~ PSA ~ Kband
 def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
+    '''len(A)=0 or len(B)=0'''
+    if len(A) == len(B) == 0:
+        return 0, '', ''
+    elif len(A) == 0:
+        return -2*len(B), '-'*len(B), B
+    elif len(B) == 0:
+        return -2*len(A), A, '-'*len(A)
     # n>=m
     # record the loc of A & B
     state_ex = 0
@@ -318,7 +325,7 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
                     x = [[-float('Inf')]*(diff+2*k+1) for _ in range(m+1)]
                     y = [[-float('Inf')]*(diff+2*k+1) for _ in range(m+1)]
             else:
-                k /= 2
+                k //= 2
                 break
     
     i = m
@@ -326,7 +333,8 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
     j = diff + k
     seq_A = ""
     seq_B = ""
-    score = score_max(t[i][j-k], x[i][j-k], y[i][j-k])
+    # score = score_max(t[i][j-k], x[i][j-k], y[i][j-k])
+    score = score_max(t[i][j], x[i][j], y[i][j])
 
     # to get the aligned seqs
     while (i > 0 or j > k):
@@ -366,7 +374,7 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
 
         else:
             print(i,j,score)
-            raise RuntimeError('Wrong!')
+            raise ValueError('Wrong!')
     
     # exchange the loc of A & B
     if state_ex:
@@ -383,60 +391,18 @@ def Compute_two(s1, s2, d=3, e=1, m=1, mis=-2):
     score_two = 0
     gap1 = 0
     for i in range(len(s1)):
-        if s1[i] != "_" and s2[i] != "_":
+        if s1[i] != "-" and s2[i] != "-":
             if gap1:
                gap1 = 0
             if s1[i] == s2[i]:
                 score_two += m
             else:
                 score_two += mis
-        elif s1[i] != "_" or s2[i] != "_":
+        elif s1[i] != "-" or s2[i] != "-":
             if gap1 == 0:
                 score_two -= d
                 gap1 = 1
             else:
                 score_two -= e
     return score_two
-
-
-if __name__ == "__main__":
-
-    name = ['SARS','dog_eye','Homo_sapiens','SCML4','genome']
-    for i in range(len(name)):
-        # i = 3
-        begin_time = datetime.datetime.now()
-        
-        strs = read_fasta(filename=name[i]+'_aligned.fasta')
-        # strs = read_fasta(filename=name[i]+'.fasta')[0:2]
-        file_path = os.getcwd() + "/data/" + name[i] + "_aligned.fasta"
-
-        print(len(strs))
-        for j in range(1,2):
-            
-            # A = strs[0]
-            # B = strs[j]
-            # print(name[i],":",len(A),len(B))
-
-            # _, A_aligned, B_aligned = PSA_AGP_Kband(A, B, d = 3, e = 1)
-
-            end_time = datetime.datetime.now()
-            
-            score_1 = Compute_two(strs[0], strs[1])
-            score_2 = Compute_two(strs[2], strs[3])
-            # score_3 = Compute_two(strs[4], strs[5])
-            # score_4 = Compute_two(strs[6], strs[7])
-
-            with open(file_path, 'a+') as f:
-                f.write('\n' + 'SP score of Kband:' + str(score_1))
-                f.write('\n' + 'SP score of MAFFT:' + str(score_2))
-                # f.write('\n' + 'SP score of Kband:' + str(score_3))
-                # f.write('\n' + 'SP score of MAFFT:' + str(score_4))
-
-            # with open(file_path, 'w') as f:
-            #     f.write('\n' + '> 0 ' + 'Kband  Time cost:' + str(end_time-begin_time) + ' length: '+ str(len(A)) + '\n')
-            #     f.write(A_aligned)
-            #     f.write('\n' + '> ' + str(j) + ' length: '+ str(len(B)) + '\n')
-            #     f.write(B_aligned)
-            #     f.write('\n')
-
-        print((end_time-begin_time).seconds)
+    

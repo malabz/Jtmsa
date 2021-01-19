@@ -80,7 +80,7 @@ def MSA_star(S):
                 print(S_aligned[0])
                 print(str[0])
                 print(str[1])
-                raise ValueError("the length of seqs have a problem")
+                raise("the length of seqs have a problem")
 
             S_aligned.append(str[1])
 
