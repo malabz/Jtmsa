@@ -1,18 +1,10 @@
-# Computing sim(s, t)
-# Algorithm BestScore
-# input: sequence s and t
-# output: vector a
-# author: Juntao Chen
+'''
+Algorithm BestScore
+input: sequence s and t
+output: similarity a
+author: Juntao Chen
+'''
 
-
-# gap
-g = -1
-# input sequences
-t = 'TTGCCATT'
-s = 'CCAATTTT'
-
-# aligned sequence
-Align_s = ['']*len(s)
 
 # mathch 1 mismatch -1
 def p(i,j):
@@ -102,6 +94,13 @@ def Align(s, t, a, b, c, d):
 
 if __name__ == "__main__":
 
+    # gap
+    g = -1
+    # input sequences
+    t = 'TTGCCATT'
+    s = 'CCAATTTT'
+    # aligned sequence
+    Align_s = ['']*len(s)
     Score = BestScore(s, t)
     s_a, t_a = Align(s,t,0,len(s),0,len(t))
     print('Best_score : ', Score[-1])

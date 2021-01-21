@@ -1,13 +1,12 @@
-# pair sequence alignment
-# Linear gap penalty
-# Affine gap penalty
-# Kband
-# author: Juntao Chen
-
-import os
-import datetime
-from pprint import pprint
-from Extract_data import read_fasta
+'''
+pair sequence alignment
+Linear gap penalty
+Affine gap penalty
+Kband
+input A and B
+output SP_score, align_A and align_B
+author: Juntao Chen
+'''
 
 # match 1
 # mismatch -2

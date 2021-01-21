@@ -1,6 +1,7 @@
-# to extract the data from the csv file
-# author: Juntao Chen
-
+'''
+to extract the dna data from files
+author: Juntao Chen
+'''
 import os 
 import csv
 
@@ -17,18 +18,11 @@ def find_gap(s):
 
 
 def extract_data(filename='DNA.csv'):
-    # read the filename
-    # data_path = os.getcwd() + "/data"
-    # # filenames = os.listdir(data_path)
-    # file_path = data_path + "/" + filename
-
     file_path = os.path.join(os.getcwd(), "data", filename)
-
     # read the csv data
     with open(file_path, 'r') as f:
         reader = csv.reader(f)
         datas = list(reader)
-
     strs = []
     for data in datas[:10000]:
         loc = find_gap(data[0])
@@ -36,9 +30,6 @@ def extract_data(filename='DNA.csv'):
         tmp_list = tmp.split(" ")
         tmp = ("").join(tmp_list)
         strs.append(tmp)
-    
-    # write_fasta(strs, os.getcwd() + "\\DNA.fasta")
-
     return strs
 
 def write_fasta(strs, filepath):
@@ -54,14 +45,7 @@ def write_fasta(strs, filepath):
 
 
 def read_fasta(filename="genome.fasta"):
-    # read the filename
-    # data_path = os.getcwd() + "/data"
-    # filenames = os.listdir(data_path)
-    # file_path = data_path + "/" + filename
-
     file_path = os.path.join(os.getcwd(), "data", filename)
-
-
     with open(file_path, 'r') as f:
         temp = ""
         strs = []
@@ -77,7 +61,5 @@ def read_fasta(filename="genome.fasta"):
     return strs[1:]
 
 if __name__ == "__main__":
-    data = read_fasta()
-    print(len(data), len(data[1]), len(data[-1]), len(data[-2]))
-    # extract_data()
-    # pass
+    pass
+    

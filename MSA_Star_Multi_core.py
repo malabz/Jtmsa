@@ -1,13 +1,13 @@
-# star alignment with multiprocessing
-# author: Juntao Chen
+'''
+star alignment with multiprocessing
+author: Juntao Chen
+'''
 
-from Extract_data import extract_data, read_fasta
-from PSA import PSA_AGP_Kband, Compute_two
-from pprint import pprint
+from PSA_kband import PSA_AGP_Kband, Compute_two
+from Extract_data import read_fasta
 import multiprocessing as mp
 import numpy as np
 import datetime
-import os
 
 # to find the center sequence
 def find_censeq(name, param):
@@ -42,10 +42,10 @@ def MSA_star_Multicores(S):
         'task2': (S, 1, num_cores),
         'task3': (S, 2, num_cores),
         'task4': (S, 3, num_cores),
-        # 'task5': (S, 4, num_cores),
-        # 'task6': (S, 5, num_cores),
-        # 'task7': (S, 6, num_cores),
-        # 'task8': (S, 7, num_cores)
+        'task5': (S, 4, num_cores),
+        'task6': (S, 5, num_cores),
+        'task7': (S, 6, num_cores),
+        'task8': (S, 7, num_cores)
         }
     pool = mp.Pool(num_cores)
     results = [pool.apply_async(find_censeq, args=(name, param)) for name, param in param_dict.items()]
@@ -61,7 +61,7 @@ def MSA_star_Multicores(S):
                         if not state:
                             ij = results[k][i][j]
                         else:
-                            raise("ci wrong")
+                            raise ValueError("ci wrong")
                 s_psa[i][j] = s_psa[j][i] = ij
     C = np.argmax(np.sum(s_psa, axis=0))
     
@@ -116,7 +116,7 @@ def MSA_star_Multicores(S):
                 print(S_aligned[0])
                 print(str[0])
                 print(str[1])
-                raise("the length of seqs have a problem")            
+                raise ValueError("the length of seqs have a problem")            
             
             S_aligned.append(str[1])
         else:
@@ -142,7 +142,6 @@ if __name__ == "__main__":
     s = 0
     e = 1000
     begin_time = datetime.datetime.now()
-    # strs = extract_data()
     strs = read_fasta()
     print(len(strs))
     Max, strs_aligned = MSA_star_Multicores(strs[s:e])

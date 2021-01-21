@@ -1,8 +1,16 @@
-from PSA_Kband import Compute_two, PSA_AGP_Kband
-from pprint import pprint
-from Extract_data import read_fasta
+'''
+PSA with LCS longest common sequence (Nakatsu LCS)
+self.align()
+input A and B
+output spscore, align_A, align_B
+author: Juntao Chen
+'''
 
-class Nakatsu(object):
+from PSA_Kband import Compute_two, PSA_AGP_Kband
+from Extract_data import read_fasta
+from pprint import pprint
+
+class PSA_LCS(object):
     def __init__(self, A:str, B:str):
         if len(A) > len(B):
             A, B = B, A
@@ -69,7 +77,6 @@ class Nakatsu(object):
         else:
             temp = [[track[i][1]-1,track[i][1]-1], [track[i][2]-1,track[i][2]-1]]
             merge_track.append(temp)
-        # print(merge_track)
         return merge_track
 
     def LCS(self):
@@ -90,17 +97,9 @@ class Nakatsu(object):
             if j + k> self.m:
                 if L[k-1][i-1] != -1:
                     self.length = k - 1
-                    # print('A:', A)
-                    # print('B:', B)
-                    # print('LCS_len:', k-1)
-                    # pprint(L)
                     break
             j += 1
         track = self._trace_back(L, k-1, i-1)
-        # print('LCS: ', end='')
-        # for i in track:
-        #     print(self.B[i[0][0]-1:i[0][1]], end='')
-        # print()
         return track
     
     def align(self):
@@ -131,7 +130,6 @@ class Nakatsu(object):
         s_B += align_B[-1]
 
         score = Compute_two(s_A, s_B)
-        # print(score)
         return score, s_A, s_B
 
 
