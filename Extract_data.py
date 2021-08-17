@@ -2,8 +2,10 @@
 to extract the dna data from files
 author: Juntao Chen
 '''
-import os 
+import os
+import re
 import csv
+import pandas as pd
 
 # to find the gap in string
 def find_gap(s):
@@ -32,6 +34,31 @@ def extract_data(filename='DNA.csv'):
         strs.append(tmp)
     return strs
 
+def ex_nex(filename):
+    file_path = os.path.join(os.getcwd(), "data", filename)
+    with open(file_path, 'r') as f:
+        data = [re.split('\s+', line[:-1]) for line in f]
+   
+    file_path = os.path.join(os.getcwd(), "data", filename[:-3]+'fasta')
+    with open(file_path, 'w') as f:
+        for d in data:
+            f.write("> " + d[0] + '\n')
+            f.write(re.sub('-','',d[1]) + '\n')
+
+
+def ex_time(filename='rna_16s_data.csv'):
+    file_path =  os.path.join(os.getcwd(), "data", "test", filename)
+    df = pd.read_csv(file_path)
+    def ex(time):
+        s = time.split(':')
+        s = float(s[0])*3600 + float(s[1])*60 + float(s[2])
+        return s
+    for i in range(len(df['timek'])):
+        df.loc[i,'timek'] = ex(df.loc[i,'timek'])
+        df.loc[i,'times'] = ex(df.loc[i,'times'])
+        df.loc[i,'timel'] = ex(df.loc[i,'timel'])
+    df.to_csv(filename)
+
 def write_fasta(strs, filepath):
 
     i = 0
@@ -44,13 +71,15 @@ def write_fasta(strs, filepath):
     return 1
 
 
-def read_fasta(filename="genome.fasta"):
+def read_fasta(filename="genome.fasta", del_ = False):
     file_path = os.path.join(os.getcwd(), "data", filename)
     with open(file_path, 'r') as f:
         temp = ""
         strs = []
         for line in f:
             if line.startswith('>'):
+                if del_:
+                    temp = re.sub('-', '', temp)
                 strs.append(temp)
                 temp = ""
                 continue
@@ -61,5 +90,6 @@ def read_fasta(filename="genome.fasta"):
     return strs[1:]
 
 if __name__ == "__main__":
-    pass
-    
+    names = os.listdir(os.path.join(os.getcwd(), "data"))
+    names = [i for i in names if 'nex' in i]
+    for i in names: ex_nex(i)

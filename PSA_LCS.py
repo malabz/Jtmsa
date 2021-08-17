@@ -7,13 +7,13 @@ author: Juntao Chen
 '''
 
 from PSA_Kband import Compute_two, PSA_AGP_Kband
-from Extract_data import read_fasta
-from pprint import pprint
 
 class PSA_LCS(object):
     def __init__(self, A:str, B:str):
+        self.state_loc = 0
         if len(A) > len(B):
             A, B = B, A
+            self.state_loc = 1
         self.A = A
         self.B = B
         self.m = len(A)
@@ -24,7 +24,7 @@ class PSA_LCS(object):
         if l1 == -1:
             return -1
         if l2 == -1:
-            l2 = self.n+1
+            l2 = self.n + 1
         for j in range(l1+1, l2):
             if self.A[i-1] == self.B[j-1]:
                 return j
@@ -43,13 +43,10 @@ class PSA_LCS(object):
                 i -= 1
         track = track[::-1]
         # print(track, len(track))
-        merge_track = self._merge(track)
-        return merge_track
+        return self._merge(track)
 
     def _judge(self, t1, t2):
-        if t1[1] + 1 == t2[1] and t1[2] + 1 ==t2[2]:
-            return True
-        return False
+        return True if t1[1] + 1 == t2[1] and t1[2] + 1 ==t2[2] else False
 
     def _merge(self, track):
         merge_track = []
@@ -57,27 +54,26 @@ class PSA_LCS(object):
         i = 0
         for i in range(len(track)-1):
             if self._judge(track[i], track[i+1]):
-                if start == []:
-                    start = track[i]
+                if start == []: start = track[i]
                 end = track[i+1]
             else:
                 if start:
                     temp = [[start[1]-1, end[1]-1], [start[2]-1, end[2]-1]]
                     merge_track.append(temp)
-                    start = []
-                    end = []
+                    start, end = [], []
                 else:
                     temp = [[track[i][1]-1,track[i][1]-1], [track[i][2]-1,track[i][2]-1]]
                     merge_track.append(temp)
         if start:
             temp = [[start[1]-1, end[1]-1], [start[2]-1, end[2]-1]]
             merge_track.append(temp)
-            start = []
-            end = []
+            start, end = [], []
         else:
             temp = [[track[i][1]-1,track[i][1]-1], [track[i][2]-1,track[i][2]-1]]
             merge_track.append(temp)
-        return merge_track
+        del_len = [k for k, i in enumerate(merge_track) if i[0][1]-i[0][0] <= self.n//100]
+        new_track = [merge_track[i] for i in range(len(merge_track)) if i not in del_len]
+        return new_track
 
     def LCS(self):
         L = [[-1]*(self.m+1) for _ in range(self.m+1)]
@@ -102,8 +98,14 @@ class PSA_LCS(object):
         track = self._trace_back(L, k-1, i-1)
         return track
     
+    def sim(self, track):
+        length = 0
+        for i in track: length += (i[0][1]-i[0][0]+1)
+        return length/self.n
+
     def align(self):
         track = self.LCS()
+        sim = self.sim(track)
         strs_A, strs_B = [], []
         align_A, align_B = [], []
         s_a, s_b = 0, 0
@@ -130,6 +132,9 @@ class PSA_LCS(object):
         s_B += align_B[-1]
 
         score = Compute_two(s_A, s_B)
-        return score, s_A, s_B
+        if self.state_loc: s_A, s_B = s_B, s_A
+        return sim, score, s_A, s_B
 
+if __name__ == "__main__":
+    pass
 

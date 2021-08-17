@@ -3,12 +3,17 @@ MSA---star alignment
 author: Juntao Chen
 '''
 
-from PSA import Compute_two, PSA_AGP_Kband
-from multiprocessing import Process, Pool
-from Extract_data import extract_data
-from pprint import pprint
+from PSA_Kband import *
 import numpy as np
-import datetime
+
+def insertGap(mark, seq):
+    res = ""
+    length = len(mark)
+    for i in range(length):
+        res += "-" * mark[i]
+        if i < length - 1: 
+            res += seq[i]
+    return res
 
 def MSA_star(S):
     # 1. to find the center sequence
@@ -43,52 +48,41 @@ def MSA_star(S):
     # pprint(Strings)
     # 3. build the multiple alignment
     S_aligned = []
-    for str in Strings:
-        if S_aligned:
-            j = 0
-            k = 0
-            marks = [[],[]]
-            while j<len(S_aligned[0]) and k<len(str[0]):
-                if S_aligned[0][j] == str[0][k]:
-                    j += 1
-                    k += 1                    
-                elif S_aligned[0][j] == "-":
-                    marks[1].append(k)
-                    j += 1
-                elif str[0][k] == "-":
-                    marks[0].append(j)
-                    k += 1
-                else:
-                    j += 1
-                    k += 1
-
-            tmp_j = len(S_aligned[0]) - j
-            tmp_k = len(str[0]) - k
-
-            for mark in marks[0]:
-                for i in range(len(S_aligned)):
-                    S_aligned[i] = S_aligned[i][0:mark] + "-" + S_aligned[i][mark:]
-            for mark in marks[1]:
-                str[1] = str[1][0:mark] + "-" + str[1][mark:]
-            
-            if tmp_j:
-                str[1] += tmp_j * "-"
-            elif tmp_k:
-                for i in range(len(S_aligned)):
-                    S_aligned[i] += tmp_k * "-"               
-            
-            if len(S_aligned[0]) != len(str[1]):
-                print(tmp_j, tmp_k)
-                print(S_aligned[0])
-                print(str[0])
-                print(str[1])
-                raise("the length of seqs have a problem")
-
-            S_aligned.append(str[1])
-
+    markInsertion = [0]*(len(S[C]) + 1)
+    for str2 in Strings:
+        i = 0
+        counter = 0
+        for c in str2[0]:
+            if c == '-': counter += 1
+            else:
+                markInsertion[i] = max(markInsertion[i], counter)
+                counter = 0
+                i += 1
+            markInsertion[i] = max(markInsertion[i], counter)
+    S_aligned = [""]*(len(S))
+    S_aligned[C] = insertGap(markInsertion, S[C])
+    idx = 0
+    for str2 in Strings:
+        mark = [0]*(len(str2[0])+1)
+        total = 0
+        pi = 0
+        pj = 0
+        for c in str2[0]:
+            if c == '-': 
+                total += 1
+            else:
+                mark[pi] = markInsertion[pj] - total
+                pi += 1
+                pj += 1
+                while total != 0:
+                    pi += 1
+                    total -= 1
+        mark[pi] = markInsertion[pj] - total
+        if idx >= C:
+            S_aligned[idx + 1] = insertGap(mark, str2[1])
         else:
-            S_aligned.append(str[0])
-            S_aligned.append(str[1])
+            S_aligned[idx] = insertGap(mark, str2[1])
+        idx += 1
 
     # 4. compute the SP value
     Value_SP = 0
@@ -104,17 +98,3 @@ def MSA_star(S):
     print("-----------END-----------")
 
     return Value_SP, S_aligned
-
-if __name__ == "__main__":
-
-    s = 50
-    t = 500
-    for i in range(0,1):
-        s -= 50
-        print(s)
-        begin_time = datetime.datetime.now()
-        strs = extract_data()
-        Max, strs_aligned = MSA_star(strs[s:t])
-        end_time = datetime.datetime.now()
-        run_time = end_time - begin_time
-        print("the cost of time:", run_time)

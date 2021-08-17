@@ -38,229 +38,6 @@ def InsiderStrip(i, j, k, diff=0):
     return (-k <= j - i <= k + diff)
 
 
-# PSA ~ linear gap penalty
-def PSA_LGP(A, B, g = -1):
-    # n>=m
-    # record the loc of A & B
-    state_ex = 0
-    if len(A)>len(B):
-        A, B = B, A
-        state_ex = 1
-    n = len(B)
-    m = len(A)
-
-    p = [[0]*(n+1) for _ in range(m+1)]
-
-    # init
-    for i in range(1, m+1):
-        p[i][0] = g*i
-    for j in range(1, n+1):
-        p[0][j] = g*j
-
-    for i in range(0, m):
-        for j in range(0, n):
-            p[i+1][j+1] = max(p[i][j] + s(A[i], B[j]), p[i][j+1] + g, p[i+1][j] + g)
-
-    i = m
-    j = n
-    seq_A = ""
-    seq_B = ""
-    
-    while (i > 0 or j > 0):
-        if i > 0 and j > 0:
-            if p[i][j] == p[i-1][j-1] + s(A[i-1], B[j-1]):
-                seq_A += A[i-1]
-                seq_B += B[j-1]        
-                i -= 1
-                j -= 1
-                continue
-        if i > 0:
-            if p[i][j] == p[i-1][j] + g:
-                seq_A += A[i-1]
-                seq_B += '-'        
-                i -= 1
-                continue
-        if j > 0:
-            if p[i][j] == p[i][j-1] + g:
-                seq_A += '-'
-                seq_B += B[j-1]        
-                j -= 1
-                continue
-        else:
-            print(i,j)
-            raise ValueError('i,j are Error')
-
-    # exchange the loc of A & B
-    if state_ex:
-        seq_A, seq_B = seq_B, seq_A
-    
-    return p[-1][-1], seq_A[::-1], seq_B[::-1]
-
-
-# PSA ~ Affine gap penalty
-def PSA_AGP(A, B, d=3, e=1):
-    # n>=m
-    # record the loc of A & B
-    state_ex = 0
-    if len(A)>len(B):
-        A, B = B, A
-        state_ex = 1
-    n = len(B)
-    m = len(A)
-
-    t = [[-float('Inf')]*(n+1) for _ in range(m+1)]
-    x = [[-float('Inf')]*(n+1) for _ in range(m+1)]
-    y = [[-float('Inf')]*(n+1) for _ in range(m+1)]
-
-    # init
-    t[0][0] = 0
-    for i in range(1, m+1):
-        y[i][0] = -d - e*(i-1)
-
-    for j in range(1, n+1):
-        x[0][j] = -d - e*(j-1)
-
-    for i in range(1, m+1):
-        for j in range(1, n+1):
-            # x :  _ ~ B[j]
-            x[i][j] = max(t[i][j-1]-d, x[i][j-1]-e)
-            # y : A[i] ~ _ 
-            y[i][j] = max(t[i-1][j]-d, y[i-1][j]-e)
-            # t : A[i] ~ B[j]
-            t[i][j] = max(t[i-1][j-1], x[i-1][j-1], y[i-1][j-1]) + s(A[i-1], B[j-1])
-
-    i = m
-    j = n
-    seq_A = ""
-    seq_B = ""
-
-    score_ = max(t[-1][-1], x[-1][-1], y[-1][-1])
-    score = score_max(t[i][j], x[i][j], y[i][j])
-
-    while (i > 0 or j > 0):
-        if score == 't' and i>0 and j>0:
-            if t[i][j] == t[i-1][j-1] + s(A[i-1], B[j-1]) and i>1 and j>1:
-                score = 't'
-            elif t[i][j] == x[i-1][j-1] + s(A[i-1], B[j-1]) and j>1:
-                score = 'x'
-            elif t[i][j] == y[i-1][j-1] + s(A[i-1], B[j-1]) and i>1:
-                score = 'y'
-            seq_A += A[i-1]
-            seq_B += B[j-1]
-            i -= 1
-            j -= 1
-        elif score == 'x' and j>0:
-            if x[i][j] == t[i][j-1] - d and i>=1 and j>1:
-                score = 't'
-            elif x[i][j] == x[i][j-1] - e:
-                score = 'x'
-            seq_A += '-'
-            seq_B += B[j-1]
-            j -= 1
-        elif score == 'y' and i>0:
-            if y[i][j] == t[i-1][j] - d and i>1 and j>=1:
-                score = 't'
-            elif y[i][j] == y[i-1][j] - e:
-                score = 'y'
-            seq_A += A[i-1]
-            seq_B += '-'
-            i -= 1
-
-    # exchange the loc of A & B
-    if state_ex:
-        seq_A, seq_B = seq_B, seq_A
-
-    return score_, seq_A[::-1], seq_B[::-1]
-
-
-# PSA ~ Kband ~ linear penalty
-def PSA_LGP_Kband(A, B, g=-1):
-    # n>=m
-    # record the loc of A & B
-    state_ex = 0
-    if len(A)>len(B):
-        A, B = B, A
-        state_ex = 1
-    n = len(B)
-    m = len(A)
-    diff = n - m
-    k = 1
-    p = [[-float('Inf')]*(diff+2*k+1) for _ in range(m+1)]
-    old = -float('Inf')
-
-    while k <= m:
-        # init
-        for i in range(k+1):
-            p[i][k-i] = i * g
-        for j in range(1, k+1+diff):
-            p[0][j+k] = j * g
-        p[0][k] = 0
-        
-        for i in range(1, m+1):
-            for d in range(-k, k+1+diff):
-                j = d
-                if 1 <= j + i <= n:
-                    j += k
-                    p[i][j] = p[i-1][j] + s(A[i-1],B[j+i-k-1])
-                    if InsiderStrip(i-1, j+i-k, k, diff):
-                        p[i][j] = max(p[i][j], p[i-1][j+1] + g)
-                    if InsiderStrip(i, j-1+i-k, k, diff):
-                        p[i][j] = max(p[i][j], p[i][j-1] + g)
-        if old == p[-1][-1-k]:
-            # pprint(a)
-            break
-        else:
-            old = p[-1][-1-k]
-            k *= 2
-            if k <= m:
-                p = [[-float('Inf')]*(diff+2*k+1) for _ in range(m+1)]
-            else:
-                k //= 2
-                break
-    i = m
-    b_j = n
-    j = diff + k
-
-    seq_A = ""
-    seq_B = ""
-    
-    # to get the aligned seqs
-    while (i > 0 or j > k):
-        if i > 0 and j >= 0:
-            if p[i][j] == p[i-1][j] + s(A[i-1], B[b_j-1]):
-                seq_A += A[i-1]
-                seq_B += B[b_j-1]        
-                i -= 1
-                b_j -= 1
-                continue
-
-        if i > 0 and j + 1 <= 2 * k + diff:
-            if p[i][j] == p[i-1][j+1] + g:
-                seq_A += A[i-1]
-                seq_B += '-'        
-                i -= 1
-                j += 1
-                continue
-        
-        if j > 0:
-            if p[i][j] == p[i][j-1] + g:
-                seq_A += '-'
-                seq_B += B[b_j-1]        
-                b_j -= 1
-                j -= 1
-                continue
-        else:
-            print(i,j,b_j)
-            raise ValueError('Error')
-
-
-    # exchange the loc of A & B
-    if state_ex:
-        seq_A, seq_B = seq_B, seq_A
-        
-    return p[-1][-1-k], seq_A[::-1], seq_B[::-1]
-
-
 # Affine gap penalty ~ PSA ~ Kband
 def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
     '''len(A)=0 or len(B)=0'''
@@ -332,11 +109,14 @@ def PSA_AGP_Kband(A, B, d=3, e=1, get_score = 0):
     j = diff + k
     seq_A = ""
     seq_B = ""
-    # score = score_max(t[i][j-k], x[i][j-k], y[i][j-k])
     score = score_max(t[i][j], x[i][j], y[i][j])
+    # print(t)
+    # print(x)
+    # print(y)
 
     # to get the aligned seqs
     while (i > 0 or j > k):
+        # print(score, i, j, b_j, k)
         if score == 't' and i > 0 and j >= 0:
             if t[i][j] == t[i-1][j] + s(A[i-1], B[b_j-1]) and i > 1 and j >= 0:
                 score = 't'
@@ -404,4 +184,9 @@ def Compute_two(s1, s2, d=3, e=1, m=1, mis=-2):
             else:
                 score_two -= e
     return score_two
+
+if __name__ == "__main__":
+    A = "AAACCCAAACCCAAEEACCCEE"
+    B = "ABCDAAACCCAAAEECCC"
+    print(PSA_AGP_Kband(A, B))
     
