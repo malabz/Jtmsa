@@ -41,7 +41,8 @@ class PSA_Suffixtree(object):
         # the length of strings
         self.len = -1
         self.root = None
-        self.thorehold = len(strings) // 100 if len(strings) // 100 >= 15 else 15; 
+        self.thorehold = len(strings) // 100 if len(strings) // 100 >= 15 else 15;
+        self.build_tree()
 
     def _edge_length(self, node:Node) -> int:
         return node.end - node.start + 1
@@ -260,7 +261,6 @@ class PSA_Suffixtree(object):
         return selected_results, max(p)/self.len
 
     def align(self, s2:str) -> tuple:
-        self.build_tree()
         results, sim = self._select_CommonStrings(s2)
         A, B = [], []
         align_A, align_B = [], []

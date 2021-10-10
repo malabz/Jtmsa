@@ -5,6 +5,7 @@ author: Juntao Chen
 
 from PSA_Kband import *
 import numpy as np
+from Extract_data import read_fasta
 
 def insertGap(mark, seq):
     res = ""
@@ -98,3 +99,7 @@ def MSA_star(S):
     print("-----------END-----------")
 
     return Value_SP, S_aligned
+
+if __name__ == "__main__":
+    strs = read_fasta("dna500.fasta")
+    MSA_star(strs)
