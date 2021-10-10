@@ -9,8 +9,7 @@ author Juntao Chen
 '''
 
 from PSA_Kband import Compute_two, PSA_AGP_Kband
-import matplotlib.pyplot as plt
-import networkx as nx
+from Extract_data import read_fasta
 import numpy as np
 
 end = -1
@@ -42,6 +41,7 @@ class PSA_Suffixtree(object):
         # the length of strings
         self.len = -1
         self.root = None
+        self.thorehold = len(strings) // 100 if len(strings) // 100 >= 15 else 15; 
 
     def _edge_length(self, node:Node) -> int:
         return node.end - node.start + 1
@@ -123,48 +123,16 @@ class PSA_Suffixtree(object):
         self.root = self._gen_node(-1, rootEnd)
         self.actNode = self.root
         for i in range(self.len): self._gen_trie(i)
-        
-    def _creat_graph(self, node:Node, deepth=1, edges=[]) -> list:
-        strs = self.T[node.start:(node.end+1)] if node.start != -1 else 'Root'
-        if node.children:
-            sons = node.children.keys()
-            for k, son in enumerate(sons):
-                strs_son = self.T[node.children[son].start:(node.children[son].end+1)]
-                edges.append([strs, strs_son, deepth, k])
-                self._creat_graph(node.children[son], deepth+1, edges)
-        return edges
     
-    # draw the tree in a pic
-    def draw(self):
-        edges = self._creat_graph(self.root)
-        G = nx.DiGraph()
-        i, j = 0, 1
-        pos = {}
-        pos[i] = (0,0)
-        record = {0:{}}
-        for k in range(len(edges)):
-            print(edges[k][0]+'-->'+edges[k][1])
-            record[edges[k][2]] = {}
-            if k >= 1 :
-                i = 0 if edges[k][0] == 'Root' else record[edges[k][2]-1][edges[k][0]]
-                j += 1
-            record[edges[k][2]][edges[k][1]] = j
-            pos[j] = (edges[k][3]+2*k, -edges[k][2])
-            G.add_edge(i,j, name=edges[k][1])
 
-        nx.draw(G, pos)
-        edge_labels = nx.get_edge_attributes(G, 'name')
-        nx.draw_networkx_edge_labels(G,pos, edge_labels=edge_labels)
-        plt.show()
-    
     def __walk_down_fcs(self, node:Node, step:int) -> bool:
         return True if self._edge_length(node) <= step else False
 
     def _dfs_leaves(self, node:Node, results:list, length:int) -> list:
         sons = node.children.values()
         for son in sons:
-            if son.leaf and self._edge_length(son) > 1:
-                results.append(son.start-length)
+            if son.leaf:
+                results.append(son.start-length-self._edge_length(node))
             else:
                 tmp = length + self._edge_length(son)
                 self._dfs_leaves(son, results, tmp)
@@ -191,6 +159,10 @@ class PSA_Suffixtree(object):
                     break
             else:
                 break
+
+            if self.T[node.start + step] != s[step+length]:
+                break
+
             while self.T[node.start + step] == s[step+length]:
                 step += 1
                 if len(s) >= step + length:
@@ -212,7 +184,7 @@ class PSA_Suffixtree(object):
                 break
         if node.leaf:
             starts.append(node.start-length)
-        elif length + step >= self.len//100:
+        elif length + step >= self.thorehold:
             starts = self._dfs_leaves(node, starts, length)
         else:
             starts = ['N']
@@ -253,7 +225,7 @@ class PSA_Suffixtree(object):
                 result[2] = result[2][index]
             else:
                 result[2] = result[2][0]
-            if result[1] < length // 100: delete_k.append(k)
+            if result[1] < self.thorehold: delete_k.append(k)
         de_results = [results[i] for i in range(len(results)) if i not in delete_k]
         return de_results
 
@@ -318,9 +290,16 @@ class PSA_Suffixtree(object):
 
 
 if __name__ == "__main__":
-    A = "CTGACTGACTGACTGACTGACTGA"
-    B = "AACCTGACTGAACTGAACTGAACG"
+    # A = "CTGACTGACTGACTGACTGACTGA"
+    # B = "AACCTGACTGAACTGAACTGAACG"
 
+    # kb = PSA_Suffixtree(A)
+    # kb.build_tree()
+    # # kb.draw()
+    # print(kb.align(B))
+    strs = read_fasta("SARS2.fasta")
+    A = strs[0]
+    B = strs[1]
     kb = PSA_Suffixtree(A)
     kb.build_tree()
     # kb.draw()

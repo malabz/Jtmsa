@@ -5,7 +5,6 @@ author: Juntao Chen
 import os
 import re
 import csv
-import pandas as pd
 
 # to find the gap in string
 def find_gap(s):
@@ -45,19 +44,6 @@ def ex_nex(filename):
             f.write("> " + d[0] + '\n')
             f.write(re.sub('-','',d[1]) + '\n')
 
-
-def ex_time(filename='rna_16s_data.csv'):
-    file_path =  os.path.join(os.getcwd(), "data", "test", filename)
-    df = pd.read_csv(file_path)
-    def ex(time):
-        s = time.split(':')
-        s = float(s[0])*3600 + float(s[1])*60 + float(s[2])
-        return s
-    for i in range(len(df['timek'])):
-        df.loc[i,'timek'] = ex(df.loc[i,'timek'])
-        df.loc[i,'times'] = ex(df.loc[i,'times'])
-        df.loc[i,'timel'] = ex(df.loc[i,'timel'])
-    df.to_csv(filename)
 
 def write_fasta(strs, filepath):
 
