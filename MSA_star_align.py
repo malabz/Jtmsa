@@ -1,11 +1,18 @@
 '''
-MSA---star alignment
+multiple sequence alignment
+- center star method
+
 author: Juntao Chen
+date: 12.29.2021
 '''
 
-from PSA_Kband import *
 import numpy as np
-from Extract_data import read_fasta
+import time
+
+from PSA_Kband_memorysaving import PSA_AGP_Kband
+from FASTA import readfasta
+from score import spscore
+
 
 def insertGap(mark, seq):
     res = ""
@@ -16,54 +23,67 @@ def insertGap(mark, seq):
             res += seq[i]
     return res
 
-def MSA_star(S):
-    # 1. to find the center sequence
-    s_psa = [[-float('Inf')]*len(S) for _ in range(len(S))]
+def findCenterSeq(strs:list):
+    """
+    to find the center sequence
+
+    Returns:
+        index of center sequence
+    """
+    s_psa = [[-float('Inf')]*len(strs) for _ in range(len(strs))]
     
-    print("-----------RUN-----------")
-    print("Loading", end = "")
-    
-    for i in range(len(S)):
-        if i % (len(S)//10) == 0.0:
+    for i in range(len(strs)):
+        if i % (len(strs)//10) == 0.0:
             print(" => ", end="", flush=True)
         
-        for j in range(len(S)):
+        for j in range(len(strs)):
             if j > i:
-                tmp, _, _ = PSA_AGP_Kband(S[i], S[j])
+                tmp, _, _ = PSA_AGP_Kband(strs[i], strs[j])
                 s_psa[i][j] = s_psa[j][i] = tmp
             elif j == i:
                 s_psa[i][i] = 0
 
-    C = np.argmax(np.sum(s_psa, axis=0))
+    idxC = np.argmax(np.sum(s_psa, axis=0))
 
-    print("Loaded")
-    print("center seq:", ','.join(S[C]))
+    return idxC
 
-    # 2. do pairwise alignments
-    Strings = []
-    for i in range(len(S)):
-        if i != C:
-            _, tmp1, tmp2 = PSA_AGP_Kband(S[C], S[i])
-            Strings.append([tmp1, tmp2])
+def psa(strs:list, idxC:int):
+    """
+    align center sequence with others
+    """
+    strsAligned = []
+    for i in range(len(strs)):
+        if i != idxC:
+            _, tmp1, tmp2 = PSA_AGP_Kband(strs[idxC], strs[i])
+            strsAligned.append([tmp1, tmp2])
+    return strsAligned
 
-    # pprint(Strings)
-    # 3. build the multiple alignment
-    S_aligned = []
-    markInsertion = [0]*(len(S[C]) + 1)
-    for str2 in Strings:
+
+def getGapsLoc(strsAligned:list, markInsertion:list, idxC:int):
+    """
+    compute the gaps location
+    """
+    for str in strsAligned:
         i = 0
         counter = 0
-        for c in str2[0]:
-            if c == '-': counter += 1
+        for c in str[0]:
+            if c == '-': 
+                counter += 1
             else:
                 markInsertion[i] = max(markInsertion[i], counter)
                 counter = 0
                 i += 1
             markInsertion[i] = max(markInsertion[i], counter)
-    S_aligned = [""]*(len(S))
-    S_aligned[C] = insertGap(markInsertion, S[C])
+    return markInsertion
+
+def insertSeqsGap(strsAligned:list, markInsertion:list, strs:list, idxC):
+    """
+    insert gaps to all sequences
+    """
+    S_aligned = [""]*(len(strs))
+    S_aligned[idxC] = insertGap(markInsertion, strs[idxC])
     idx = 0
-    for str2 in Strings:
+    for str2 in strsAligned:
         mark = [0]*(len(str2[0])+1)
         total = 0
         pi = 0
@@ -79,27 +99,44 @@ def MSA_star(S):
                     pi += 1
                     total -= 1
         mark[pi] = markInsertion[pj] - total
-        if idx >= C:
+        if idx >= idxC:
             S_aligned[idx + 1] = insertGap(mark, str2[1])
         else:
             S_aligned[idx] = insertGap(mark, str2[1])
         idx += 1
+    return S_aligned
 
-    # 4. compute the SP value
-    Value_SP = 0
-    for i in range(len(S)):
-        for j in range(len(S)):
-            if j > i:
-                Value_SP += Compute_two(S_aligned[i], S_aligned[j])
+def MSA_star(strs):
+    sTime = time.time()
+    # 1. to find the center sequence
+    print("-----------RUN-----------")
+    print("Loading", end = "")
+    idxC = 0
+    print("Loaded")
+    print("center seq:", ''.join(strs[idxC]))
 
-    print("SP : ", Value_SP)
-    for str in S_aligned:
-        print(' '.join(str))
+    # 2. do pairwise alignments
+    strsAligned = psa(strs, idxC)
+
+    # 3. build the multiple alignment
+    markInsertion = [0]*(len(strs[idxC]) + 1)
+    markInsertion = getGapsLoc(strsAligned, markInsertion, idxC)
+    strsAligned = insertSeqsGap(strsAligned, markInsertion, strs, idxC)
     
+    # 4. compute the SP value
+    Value_SP = spscore(strsAligned)
+    eTime = time.time()
+    print("Run time : %.2f s"%(eTime - sTime))
+    print("SP : ", Value_SP)
+    for str in strsAligned:
+        print(' '.join(str))
     print("-----------END-----------")
 
-    return Value_SP, S_aligned
+
+    return Value_SP, strsAligned
 
 if __name__ == "__main__":
-    strs = read_fasta("dna500.fasta")
+    labels, strs = readfasta("dna500.fasta")
     MSA_star(strs)
+
+

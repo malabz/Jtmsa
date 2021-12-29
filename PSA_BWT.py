@@ -7,12 +7,12 @@ BWT-PSA
 author: ZhouTong
 time :2021.10.14
 '''
+import numpy as np
 
 from collections import Counter
-from PSA_Kband import Compute_two, PSA_AGP_Kband
-import numpy as np
-from Extract_data import read_fasta   #提取或写入DNA
-from memory_profiler import memory_usage
+from PSA_Kband import PSA_AGP_Kband
+from score import spscore
+from FASTA import readfasta   #提取或写入DNA
 
 class PSA_BWT(object):
     def __init__(self, strings):
@@ -280,17 +280,14 @@ class PSA_BWT(object):
             s_B += s2[results[j][0]:(results[j][0] + results[j][1])]  # s_B收集S串 配对区域
         s_A += align_A[-1]  # A添加尾余串
         s_B += align_B[-1]  # B添加尾余串
-        score = Compute_two(s_A, s_B)  # 求取比对得分
+        score = spscore(s_A, s_B)  # 求取比对得分
         return score, s_A, s_B  # 返回比对结果，比对得分
 
 if __name__ == '__main__':
-    A,B = read_fasta('SARS2.fasta')[0:2]
+    A,B = readfasta('SARS2.fasta')[0:2]
     A_trie = PSA_BWT(A) #先对长序列建立后缀树
     s2, A_aligned2, B_aligned2 = A_trie.align(B) #再对短序列在树中遍历
     print("score: "+str(s2))
     print(A_aligned2)
     print(B_aligned2)
-
-    # mem = max(memory_usage(proc=myfunc))
-    # print("Maximum memory used: {} MiB".format(mem))
 

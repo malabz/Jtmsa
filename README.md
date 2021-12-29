@@ -1,2 +1,3 @@
 # Jtmsa
-multiple sequence alignment for DNA with python
+
+sequence alignment implementation with python

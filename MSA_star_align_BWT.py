@@ -7,7 +7,7 @@ time :2021.10.14
 '''
 
 from PSA_Kband import Compute_two, PSA_AGP_Kband
-from Extract_data import read_fasta,write_fasta
+from FASTA import readfasta,writefasta
 import numpy as np
 import datetime
 
@@ -377,21 +377,3 @@ def MSA_star(S):#S  n条序列列表
     print("-----------END-----------")
 
     return Value_SP, S_aligned
-
-if __name__ == "__main__":
-
-    s = 0
-    t = 50
-    for i in range(0,1):
-        # s -= 50
-        # print(s)
-
-        #strs = extract_data()
-        strs = read_fasta("MSA_genome.fasta")
-
-        begin_time = datetime.datetime.now()
-        Max, strs_aligned = MSA_star(strs[s:t])
-        end_time = datetime.datetime.now()
-        run_time = end_time - begin_time
-        # write_fasta(strs_aligned, "DNA_aligned.fasta")
-        print("the cost of time:", run_time)

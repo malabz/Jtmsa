@@ -3,13 +3,18 @@ star alignment with multiprocessing
 author: Juntao Chen
 '''
 
-import multiprocessing as mp
 import numpy as np
-from PSA_Kband import *
+import multiprocessing as mp
 
-# to find the center sequence
-def find_censeq(name, param):
-    
+from PSA_Kband import PSA_AGP_Kband
+from score import spscore
+
+
+def find_censeq(name:str, param:list):
+    """
+    find the center sequence
+    """
+
     S = param[0]
     k = param[1]
     nums = param[2]
@@ -25,24 +30,36 @@ def find_censeq(name, param):
 
     return s_psa
 
-def insertGap(mark, seq):
+
+def insertGap(mark:list, seq:str):
+    """
+    insert gaps to sequences
+
+    Args:
+        mark: gaps loc list
+        seq: sequence
+
+    Returns:
+        sequence
+    """
     res = ""
     length = len(mark)
     for i in range(length):
         res += "-" * mark[i]
-        if i < length - 1: 
+        if i < length - 1:
             res += seq[i]
     return res
+
 
 def MSA_star_Multicores(S):
 
     num_cores = mp.cpu_count()//2
-    pool = mp.Pool(processes = num_cores)
+    pool = mp.Pool(processes=num_cores)
     s_psa = [[0]*len(S) for _ in range(len(S))]
 
     print("-----------RUN-----------")
     print("cores:", num_cores)
-    print("Loading", end = "")
+    print("Loading", end="")
     # 1. to find the center sequence
     param_dict = {
         'task1': (S, 0, num_cores),
@@ -53,7 +70,7 @@ def MSA_star_Multicores(S):
         'task6': (S, 5, num_cores),
         'task7': (S, 6, num_cores),
         'task8': (S, 7, num_cores)
-        }
+    }
     pool = mp.Pool(num_cores)
     results = [pool.apply_async(find_censeq, args=(name, param)) for name, param in param_dict.items()]
     results = [p.get() for p in results]
@@ -71,7 +88,7 @@ def MSA_star_Multicores(S):
                             raise ValueError("ci wrong")
                 s_psa[i][j] = s_psa[j][i] = ij
     C = np.argmax(np.sum(s_psa, axis=0))
-    
+
     print("Loaded")
     print("center seq:", ','.join(S[C]))
 
@@ -89,7 +106,8 @@ def MSA_star_Multicores(S):
         i = 0
         counter = 0
         for c in str2[0]:
-            if c == '-': counter += 1
+            if c == '-':
+                counter += 1
             else:
                 markInsertion[i] = max(markInsertion[i], counter)
                 counter = 0
@@ -104,7 +122,7 @@ def MSA_star_Multicores(S):
         pi = 0
         pj = 0
         for c in str2[0]:
-            if c == '-': 
+            if c == '-':
                 total += 1
             else:
                 mark[pi] = markInsertion[pj] - total
@@ -119,17 +137,13 @@ def MSA_star_Multicores(S):
         else:
             S_aligned[idx] = insertGap(mark, str2[1])
         idx += 1
-    
+
     # 4. compute the SP value
-    Value_SP = 0
-    for i in range(len(S)):
-        for j in range(len(S)):
-            if j > i:
-                Value_SP += Compute_two(S_aligned[i], S_aligned[j])
+    Value_SP = spscore(S)
 
     print("SP : ", Value_SP)
     for str in S_aligned:
         print(' '.join(str))
-    
+
     print("-----------END-----------")
     return Value_SP, S_aligned
