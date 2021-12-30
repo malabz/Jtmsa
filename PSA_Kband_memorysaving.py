@@ -153,7 +153,7 @@ def parse(b:str, s:int):
     return (b & 3) - 1
 
 
-def PSA_AGP_Kband(A:str, B:str, m=1, mis=-2, opengap=3, exgap=1, get_score=0):
+def PSA_AGP_Kband(A:str, B:str, ms=1, mis=-2, opengap=3, exgap=1, get_score=0):
     """
     Affine gap penalty ~ PSA ~ Kband
 
@@ -168,7 +168,7 @@ def PSA_AGP_Kband(A:str, B:str, m=1, mis=-2, opengap=3, exgap=1, get_score=0):
 
         value3: aligned seq B
     """
-    match = m
+    match = ms
     mismatch = mis
     d = opengap
     e = exgap

@@ -9,10 +9,9 @@ date: 12.29.2021
 import numpy as np
 import time
 
-from PSA_Kband_memorysaving import PSA_AGP_Kband
+from PSA_Kband import PSA_AGP_Kband
 from FASTA import readfasta
 from score import spscore
-
 
 def insertGap(mark, seq):
     res = ""
@@ -111,7 +110,7 @@ def MSA_star(strs):
     # 1. to find the center sequence
     print("-----------RUN-----------")
     print("Loading", end = "")
-    idxC = 0
+    idxC = findCenterSeq(strs)
     print("Loaded")
     print("center seq:", ''.join(strs[idxC]))
 
@@ -132,11 +131,6 @@ def MSA_star(strs):
         print(' '.join(str))
     print("-----------END-----------")
 
-
     return Value_SP, strsAligned
-
-if __name__ == "__main__":
-    labels, strs = readfasta("dna500.fasta")
-    MSA_star(strs)
 
 
