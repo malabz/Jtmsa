@@ -40,3 +40,12 @@
 2. center star alignment (multi-cores)
 
     [code](https://github.com/malabz/Jtmsa/blob/master/MSA_Star_Multi_core.py)
+
+## License
+
+This repo is released under the MIT license. See the file LICENSE for more details.
+
+## Contact
+
+If you have any problems, please email me.(ttscj12@gmail.com or 1350854808@qq.com)
+
