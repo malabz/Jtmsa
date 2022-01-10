@@ -168,6 +168,7 @@ def PSA_AGP_Kband(A:str, B:str, ms=1, mis=-2, opengap=3, exgap=1, get_score=0):
 
         value3: aligned seq B
     """
+    global match, mismatch, d, e
     match = ms
     mismatch = mis
     d = opengap
