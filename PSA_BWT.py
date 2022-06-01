@@ -10,7 +10,7 @@ time :2021.10.14
 import numpy as np
 
 from collections import Counter
-from PSA_Kband import PSA_AGP_Kband
+from PSA_Kband_memorysaving import PSA_AGP_Kband
 from score import spscore
 from FASTA import readfasta   #提取或写入DNA
 
