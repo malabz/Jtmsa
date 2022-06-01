@@ -286,8 +286,8 @@ class PSA_BWT(object):
 if __name__ == '__main__':
     #A,B = readfasta('SARS2.fasta')[0:2]
     label,(A,B) = readfasta('data/dog_eye.fasta')[0:2]
-    A_trie = PSA_BWT(A) #先对长序列建立后缀树
-    s2, A_aligned2, B_aligned2 = A_trie.align(B) #再对短序列在树中遍历
+    A_trie = PSA_BWT(A) #先对长序列建立BWT
+    s2, A_aligned2, B_aligned2 = A_trie.align(B) #再对短序列在BWT中遍历
     print("score: "+str(s2))
     print(A_aligned2)
     print(B_aligned2)
