@@ -284,7 +284,8 @@ class PSA_BWT(object):
         return score, s_A, s_B  # 返回比对结果，比对得分
 
 if __name__ == '__main__':
-    A,B = readfasta('SARS2.fasta')[0:2]
+    #A,B = readfasta('SARS2.fasta')[0:2]
+    label,(A,B) = readfasta('data/dog_eye.fasta')[0:2]
     A_trie = PSA_BWT(A) #先对长序列建立后缀树
     s2, A_aligned2, B_aligned2 = A_trie.align(B) #再对短序列在树中遍历
     print("score: "+str(s2))
