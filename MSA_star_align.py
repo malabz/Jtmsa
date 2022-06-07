@@ -58,7 +58,7 @@ def psa(strs:list, idxC:int):
     return strsAligned
 
 
-def getGapsLoc(strsAligned:list, markInsertion:list, idxC:int):
+def getGapsLoc(strsAligned:list, markInsertion:list):
     """
     compute the gaps location
     """
@@ -72,7 +72,7 @@ def getGapsLoc(strsAligned:list, markInsertion:list, idxC:int):
                 markInsertion[i] = max(markInsertion[i], counter)
                 counter = 0
                 i += 1
-            markInsertion[i] = max(markInsertion[i], counter)
+        markInsertion[i] = max(markInsertion[i], counter)
     return markInsertion
 
 def insertSeqsGap(strsAligned:list, markInsertion:list, strs:list, idxC):
@@ -119,7 +119,7 @@ def MSA_star(strs):
 
     # 3. build the multiple alignment
     markInsertion = [0]*(len(strs[idxC]) + 1)
-    markInsertion = getGapsLoc(strsAligned, markInsertion, idxC)
+    markInsertion = getGapsLoc(strsAligned, markInsertion)
     strsAligned = insertSeqsGap(strsAligned, markInsertion, strs, idxC)
     
     # 4. compute the SP value

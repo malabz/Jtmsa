@@ -8,7 +8,7 @@ import os
 import re
 
 
-def writefasta(strs:list, filepath:str):
+def writefasta(strs: list, labels, filepath: str):
     """
     write sequences to a specific file
 
@@ -19,13 +19,13 @@ def writefasta(strs:list, filepath:str):
     i = 0
     with open(filepath, 'w') as f:
         for s in strs:
-            f.write("> " + str(i) + '\n')
-            f.write(s)
-            f.write("\n")
+            f.write(">" + labels[i] + '\n')
+            for idx in range(0, len(s)//60+1):
+                f.write(s[idx*60: (idx+1)*60] + '\n')
             i += 1
 
 
-def readfasta(filename:str, del_ = False):
+def readfasta(filename: str, del_=False):
     """
     read sequences from a specific file
 
@@ -38,8 +38,7 @@ def readfasta(filename:str, del_ = False):
 
         strings
     """
-    file_path = os.path.join(os.getcwd(), filename)
-    with open(file_path, 'r') as f:
+    with open(filename, 'r') as f:
         temp = ""
         strs = []
         labels = []
@@ -54,5 +53,7 @@ def readfasta(filename:str, del_ = False):
             if line.startswith('\n'):
                 continue
             temp += line[:-1]
+        if del_:
+            temp = re.sub('-', '', temp)
         strs.append(temp)
     return labels, strs[1:]
